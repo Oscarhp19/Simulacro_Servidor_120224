@@ -4,19 +4,19 @@
     <?php
 
 
-    include_once("C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Modelos/Vivienda.php");
+    include_once("Modelos/Vivienda.php");
 
 
     session_start();
 
 
-    include "C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Vistas/menu.php";
+    include "Vistas/menu.php";
 
     const DEFAULT_VIEW = "vivienda";
 
-    $views = array("vivienda" => "C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Vistas/vivienda.php", "registrar-vivienda" => "C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Vistas/registrar-vivienda.php");
+    $views = array("vivienda" => "Vistas/vivienda.php", "registrar-vivienda" => "Vistas/registrar-vivienda.php", "mostrar-alquileres" => "Vistas/mostrar-alquileres.php");
 
-
+    $viviendaDummy = new Vivienda(10000, "Piso", "Valdelasfuentes", "C/Mediocre", 3, "400000€", "100m2", "Garaje", "Nada", "2020-04-09");
 
 
     //Obteniendo la vista que está el usuario o quiere estar
@@ -34,28 +34,23 @@
         if ($_POST["action"] == "crear") {
             if ($_SESSION["activeView"] == "registrar-vivienda") {
 
-                $newVivienda = new Vivienda($_POST['id'], $_POST['tipo'], $_POST['zona'], $_POST['direccion'], $_POST['ndormitorios'], $_POST['precio'], $_POST['tamano'], $_POST['extras'], $_POST['observaciones'], null /*, $_POST['fecha_anuncio'] */);
+                $extras = isset($_POST["extras"]) ? implode(",", $_POST["extras"]) : "";
+
+                $newVivienda = new Vivienda("", $_POST['tipo'], $_POST['zona'], $_POST['direccion'], $_POST['ndormitorios'], $_POST['precio'], $_POST['tamano'], $extras, $_POST['observaciones'], "");
                 $newVivienda->crear();
 
             }
         }
 
-
-
         if ($_POST["action"] == "alquilar") {
             if ($_SESSION["activeView"] == "vivienda") {
-                $alquileres = isset($_COOKIE['alquileres']) ? json_decode($_COOKIE['alquileres']) : array();
 
-                $alquileres[] = date('d-m-y h:i:s');
-                foreach ($alquileres as $alquiler => $hora) {
-                    echo "alquiler: " . $alquiler . " Hora: " . $hora . "<br>";
-                }
-                setcookie('numeroAlquileres', json_encode($alquileres), time() + 15);
-                $_COOKIE["numeroAlquileres"]++;
                 $viviendaDummy->alquilar($_POST['id']);
 
             }
         }
+
+        
     }
 
 

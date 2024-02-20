@@ -1,6 +1,6 @@
 <?php
-include_once "C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Modelos/Conexion.php";
-include_once "C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Modelos/Tabla.php";
+include_once "Conexion.php";
+include_once "Tabla.php";
 abstract class Crud extends Conexion
 {
     private Tabla $tabla;
@@ -11,7 +11,7 @@ abstract class Crud extends Conexion
     public function __construct($tableName, $tableIdColumn)
     {
         $this->tabla = new Tabla($tableName, $tableIdColumn);
-        $this->connection = new Conexion("localhost", 3306, "inmobiliaria", "root", "");
+        $this->connection = new Conexion("localhost", 3306, "inmobiliaria", "root", "admin");
         $this->conexion = $this->connection->getConnection();
     }
 
@@ -45,87 +45,5 @@ abstract class Crud extends Conexion
     public abstract function crear();
     public abstract function actualizar();
 
-    public function obtieneViviendasPaginadas()
-    {
-        try {
-
-            $paginaActual = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
-
-
-            $alumnosPorPagina = 4;
-            $inicio = ($paginaActual - 1) * $alumnosPorPagina;
-
-
-
-            $sql = "SELECT * FROM alumnos LIMIT $inicio, $alumnosPorPagina;";
-            $stmt = $this->conexion->prepare($sql);
-            $stmt->execute();
-            $stmt->setFetchMode(PDO::FETCH_ASSOC);
-
-            $sql2 = "SELECT * FROM alumnos;";
-
-            $stmt2 = $this->conexion->prepare($sql2);
-            $stmt2->execute();
-            $stmt2->setFetchMode(PDO::FETCH_ASSOC);
-
-            ?>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Codigo</th>
-                        <th>Nombre</th>
-                        <th>Apellidos</th>
-                        <th>Telefono</th>
-                        <th>Correo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    while ($alumnos = $stmt->fetch()) {
-                        $codigo = $alumnos['CODIGO'];
-                        $nombre = $alumnos['NOMBRE'];
-                        $apellidos = $alumnos['APELLIDOS'];
-                        $telefono = $alumnos['TELEFONO'];
-                        $correo = $alumnos['CORREO'];
-
-                        ?>
-                        <tr>
-                            <td>
-                                <?= $codigo ?>
-                            </td>
-                            <td>
-                                <?= $nombre ?>
-                            </td>
-                            <td>
-                                <?= $apellidos ?>
-                            </td>
-                            <td>
-                                <?= $telefono ?>
-                            </td>
-                            <td>
-                                <?= $correo ?>
-                            </td>
-                        </tr>
-                        <?php
-                    }
-                    ?>
-                </tbody>
-            </table>
-
-            <?php
-
-            $numPaginas = ceil($stmt2->rowCount() / $alumnosPorPagina);
-            for ($i = 1; $i <= $numPaginas; $i++) {
-                echo "<a href='index.php?pagina=$i'><button>$i</button></a>";
-            }
-        } catch (PDOException $e) {
-            echo "Error: " . $e->getMessage();
-        }
-
-        $conexion = null;
-
-        return $stmt;
-
-    }
 }
 ?>

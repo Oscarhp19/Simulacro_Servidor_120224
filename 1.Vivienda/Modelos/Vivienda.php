@@ -1,6 +1,6 @@
 <?php
 
-include_once("C:/xampp/htdocs/2EV/Simulacro/1.Vivienda/Modelos/Crud.php");
+include_once("Crud.php");
 
 class Vivienda extends Crud
 {
@@ -44,7 +44,7 @@ class Vivienda extends Crud
     {
 
         try {
-            $sql = "INSERT INTO viviendas(tipo, zona, direccion, ndormitorios, precio, tamano, extras, observaciones) VALUES(:tipo , :zona, :direccion, :ndormitorios, :precio, :tamano, :extras, :observaciones)";
+            $sql = "INSERT INTO viviendas(tipo, zona, direccion, ndormitorios, precio, tamano, extras, observaciones) VALUES (:tipo , :zona, :direccion, :ndormitorios, :precio, :tamano, :extras, :observaciones)";
             $consulta = $this->conexion->prepare($sql);
 
             $consulta->bindParam(":tipo", $this->tipo);
@@ -65,7 +65,7 @@ class Vivienda extends Crud
             if ($e->getCode() == '23000' && strpos($e->getMessage(), 'Duplicate entry') !== false) {
                 echo "Error: id ya existente.";
             } else {
-                echo "Error: " . $e /* ->getMessage() */;
+                echo "Error: " . $e->getMessage();
             }
             echo "No se ha creado la vivienda correctamente";
             return false;
@@ -92,9 +92,66 @@ class Vivienda extends Crud
     }
 
 
-    public function alquilar($id)
-    {
-        echo "Se han alquilado " . $_COOKIE["numeroAlquileres"] . "viviendas";
+/*     public function alquilar($id)
+{
+    session_start();
+    $sql = "SELECT id, tipo, zona, direccion, ndormitorios, precio, tamano FROM viviendas WHERE id = $id";
+    $consulta = $this->conexion->prepare($sql);
+    $consulta->execute();
+    
+    $result = $consulta->get_result(); // Assuming $consulta is a mysqli_stmt object
+    
+    if ($result->num_rows > 0) {
+        // Almacenar los resultados en un array
+        $vivienda = $result->fetch_assoc();
+    } else {
+        echo "No se encontraron resultados para el ID proporcionado.";
     }
+    
+    $vivienda_json = json_encode($vivienda);
+    
+    setcookie("viviendas_alquiladas", $vivienda_json, time() + (86400 * 30), "/");
+} */
+
+
+
+
+function alquilar($id) {
+
+    try {
+   
+        
+        // Preparar la consulta SQL con un marcador de posición
+        $consulta = $this->conexion->prepare("SELECT id, tipo, zona, direccion, ndormitorios, precio, tamano FROM viviendas WHERE id = :id");
+        
+        // Asignar el valor del parámetro ID y ejecutar la consulta
+        $consulta->execute([':id' => $id]);
+        
+        // Obtener la fila de resultados
+        $vivienda = $consulta->fetch(PDO::FETCH_ASSOC);
+
+        // Verificar si se encontraron resultados
+        if ($vivienda) {
+            // Obtener el array actual de viviendas alquiladas de la cookie
+            $viviendas_alquiladas = isset($_COOKIE['viviendas_alquiladas']) ? json_decode($_COOKIE['viviendas_alquiladas'], true) : [];
+
+            // Agregar la vivienda al array de viviendas alquiladas
+            $viviendas_alquiladas[$id] = $vivienda;
+
+            // Guardar el array actualizado en la cookie
+            setcookie('viviendas_alquiladas', json_encode($viviendas_alquiladas), time() + (86400 * 30), "/"); // Cookie válida por 30 días
+            
+            // Confirmar al usuario que la vivienda ha sido alquilada y la información se ha guardado en la cookie
+            echo "La vivienda ha sido alquilada correctamente y la información se ha guardado en la cookie.";
+        } else {
+            // Informar al usuario que no se encontró ninguna vivienda con el ID especificado
+            echo "No se encontró ninguna vivienda con el ID especificado.";
+        }
+
+    } catch (PDOException $e) {
+        // Capturar y mostrar cualquier error ocurrido durante la conexión o consulta a la base de datos
+        echo "Error al conectar con la base de datos: " . $e->getMessage();
+    }
+}
 
 }
